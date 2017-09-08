@@ -322,6 +322,12 @@ function main() {
             res.send(true)
         })
 
+        app.get('/peers/remove', (req, res)=> {
+            for(let key in sockets)
+                delete sockets[key]
+            res.send(true)
+        })
+
         app.listen(API_PORT, ()=> console.log(`Listening API on 'http://localhost:${API_PORT}'`))
     }
 
