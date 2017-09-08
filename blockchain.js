@@ -7,12 +7,17 @@ const WebSocket = require('ws')
 const assert = require('assert')
 const merkle = require('merkle')
 
-const API_PORT = process.env.API_PORT || 3000
-const P2P_PORT = process.env.P2P_PORT || 4000
-const PEERS = process.env.PEERS ? process.env.PEERS.split(',') : []
+let API_PORT = process.env.API_PORT || 3000
+let P2P_PORT = process.env.P2P_PORT || 4000
+let PEERS = process.env.PEERS ? process.env.PEERS.split(',') : []
 
-const VERSION = 1
-const COMPLEX = 4 // the block's hash required zero bits (in Proof of Work)
+let VERSION = process.env.VERSION || 1 // Block Chain Version, Default 0
+let COMPLEX = process.env.COMPLEX || 4 // the block's hash required zero bits (in Proof of Work)
+
+API_PORT = API_PORT * 1
+P2P_PORT = P2P_PORT * 1
+VERSION = VERSION * 1
+COMPLEX = COMPLEX * 1
 
 /**
  * @exports blockchain
@@ -167,6 +172,7 @@ function BlockChain(trades) {
     }
 
     let combine = this.combine = (blockchain)=> {
+        if(blockchain.getLatestBlock().head.version !== getLatestBlock().head.version) return 'Version Conflicts'
         if(!blockchain.getLatestBlock().head.index && !getLatestBlock().head.index) return 'Initialized Block'
         if(!blockchain.getLatestBlock().head.index && getLatestBlock().head.index) return 'Older Block'
         if(blockchain.getLatestBlock().head.index < getLatestBlock().head.index) return 'Older Block'
@@ -246,8 +252,10 @@ function main() {
             received.importJSON(data)
             let result = blockchain.combine(received)
             console.log('P2P:', result)
-            if(result == 'Success' || result == 'Older Block') {
+            if(result == 'Success' || result == 'Older Block') {    
                 broadcast(blockchain.toJSON())
+            } else if(result == 'Version Conflicts') {
+                delete sockets[`${ws._socket.remoteAddress}:${ws._socket.remotePort}`] 
             }
         })
 

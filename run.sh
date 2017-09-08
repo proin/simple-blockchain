@@ -1,1 +1,1 @@
-API_PORT=300$1 P2P_PORT=400$1 PEERS=ws://127.0.0.1:400$2 node blockchain
+API_PORT=300$1 P2P_PORT=400$1 PEERS=ws://127.0.0.1:400$2 VERSION=$3 node blockchain
