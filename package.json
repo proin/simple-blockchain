@@ -1,0 +1,18 @@
+{
+  "name": "simple-blockchain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "blockchain.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "proin <proin@proinlab.com>",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "crypto-js": "^3.1.9-1",
+    "express": "^4.15.4",
+    "merkle": "^0.5.1",
+    "ws": "^3.1.0"
+  }
+}
