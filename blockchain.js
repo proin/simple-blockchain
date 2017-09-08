@@ -167,23 +167,25 @@ function BlockChain(trades) {
     }
 
     let combine = this.combine = (blockchain)=> {
+        if(!blockchain.getLatestBlock().head.index && !getLatestBlock().head.index) return 'Initialized Block'
+        if(!blockchain.getLatestBlock().head.index && getLatestBlock().head.index) return 'Older Block'
         if(blockchain.getLatestBlock().head.index < getLatestBlock().head.index) return 'Older Block'
+
+        let verified = blockchain.verify() 
         if(blockchain.getLatestBlock().head.index === getLatestBlock().head.index) {
-            let verified = blockchain.verify() 
             if(verified && verify()) {
                 return 'Same Length'
             } else if(verified) {
-                chain = this.chain = blockchain
+                chain = this.chain = blockchain.chain
                 return 'Success'
             } else {
                 return 'Same Length, Fake Block'
             }
-        }
-
-
-        if(blockchain.verify()) {
-            chain = this.chain = blockchain.chain
-            return 'Success'
+        } else {
+            if(verified) {
+                chain = this.chain = blockchain.chain
+                return 'Success'
+            }
         }
         
         return 'Fake Block'
@@ -226,19 +228,30 @@ function main() {
     }
 
     function broadcast(message) {
-        for(let socket in sockets)
-            write(sockets[socket], message)
+        for(let socket in sockets) {
+            if(sockets[socket] && sockets[socket].readyState === WebSocket.OPEN )
+                write(sockets[socket], message)
+            else 
+                delete sockets[socket]
+        }
     }
 
     function onConnected(ws) {
         if(!ws) return 
         sockets[`${ws._socket.remoteAddress}:${ws._socket.remotePort}`] = ws
+
         ws.on('message', (data)=> {
             data = JSON.parse(data)
             let received = new BlockChain()
             received.importJSON(data)
-            blockchain.combine(received)
+            let result = blockchain.combine(received)
+            console.log('P2P:', result)
+            if(result == 'Success' || result == 'Older Block') {
+                broadcast(blockchain.toJSON())
+            }
         })
+
+        broadcast(blockchain.toJSON())
     }
 
     function P2PServer() {
@@ -251,7 +264,6 @@ function main() {
             let ws = new WebSocket(peer)
             ws.on('open', ()=> {
                 onConnected(ws)
-                broadcast(blockchain.toJSON())
             })
             ws.on('error', ()=> {
                 console.log('Error on peer connection. ' + peer)
@@ -294,7 +306,6 @@ function main() {
             let ws = new WebSocket(req.query.peer)
             ws.on('open', ()=> {
                 onConnected(ws)
-                broadcast(blockchain.toJSON())
             })
             ws.on('error', ()=> {
                 console.log('Error on peer connection. ' + req.query.peer)
