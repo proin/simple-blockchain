@@ -12,7 +12,7 @@ const P2P_PORT = process.env.P2P_PORT || 4000
 const PEERS = process.env.PEERS ? process.env.PEERS.split(',') : []
 
 const VERSION = 1
-const COMPLEX = 4
+const COMPLEX = 4 // the block's hash required zero bits (in Proof of Work)
 
 /**
  * @exports blockchain
@@ -58,7 +58,7 @@ function PoW() {
 }
 
 /**
- * @property {Class} Trade - Trade Structure
+ * @property {Class} Trade - Trade Data Structure
  */
 
 function Trade(from, to, amount) {
@@ -75,6 +75,7 @@ function Trade(from, to, amount) {
  * @property {Class} BlockHeader - Block Header Structure
  * @property {Class} BlockPlayload - Block Body Structure
  * @property {Class} Block - Block Structure
+ * @property {Class} BlockChain - Block Chain Structure
  */
 
 function BlockHeader(version, prevBlockHash, merkleHash, bits) {
@@ -192,8 +193,9 @@ function BlockChain(trades) {
 /**
  * running simulation service 
  *
- * @property {Function} createTrades
- * @property {Function} createBlock
+ * @property {Function} createTrades - create dummy trades
+ * @property {Function} createBlock - create new block
+ * @property {Function} main - run p2p & api server
  *
  */
 
@@ -306,29 +308,6 @@ function main() {
 
     APIServer()
     P2PServer()
-}
-
-/**
- * function for testing
- */
-function test() {
-    let blockChain = new BlockChain(createTrades())
-    
-    let newBlock = createBlock(blockChain, createTrades())
-    newBlock.mining()
-    blockChain.addBlock(newBlock)
-    
-    let json = blockChain.toJSON()
-    let blockChain2 = new BlockChain()
-    blockChain2.importJSON(json)
-
-    newBlock = createBlock(blockChain, createTrades())
-    newBlock.mining()
-    blockChain.addBlock(newBlock)
-
-    console.log(blockChain.chain.length)
-    let res = blockChain2.combine(blockChain)
-    console.log(res)
 }
 
 main()
